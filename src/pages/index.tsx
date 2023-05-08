@@ -74,9 +74,14 @@ function AuthPage() {
                   }
                 }}
                 placeholder="Name"
-                state={state.name.trim().length === 0?'normal':state.name.length<=3?'error':'success'}
+                state={
+                  state.name.trim().length === 0
+                    ? "normal"
+                    : state.name.length <= 3
+                    ? "error"
+                    : "success"
+                }
               />
-              
             </div>
             <div className="w-[80%] h-auto flex flex-col items-start justify-start">
               <Input
@@ -86,7 +91,7 @@ function AuthPage() {
                 onChange={async (e) => {
                   try {
                     setState({ ...state, userName: e.target.value });
-                    if (usernameRegex.test(e.target.value)) {
+                    if (!usernameRegex.test(e.target.value)) {
                       setError({
                         ...error,
                         userNameError:
@@ -96,17 +101,19 @@ function AuthPage() {
                       setError({ ...error, userNameError: "" });
                     }
                     setLoading({ ...loading, checkingUsername: true });
-                    const res = await Axios.get(
-                      `/auth/users/${e.target.value.toLowerCase()}`
-                    );
-                    const data = await res.data;
-                    if (data.error) {
-                      setError({
-                        ...error,
-                        userNameError: data.error.toLowerCase(),
-                      });
-                    } else {
-                      setError({ ...error, userNameError: "" });
+                    if (e.target.value.trim().length !== 0) {
+                      const res = await Axios.get(
+                        `/auth/users/${e.target.value.toLowerCase()}`
+                      );
+                      const data = await res.data;
+                      if (data.error) {
+                        setError({
+                          ...error,
+                          userNameError: data.error.toLowerCase(),
+                        });
+                      } else {
+                        setError({ ...error, userNameError: "" });
+                      }
                     }
                     setLoading({ ...loading, checkingUsername: false });
                   } catch (error) {}
@@ -116,7 +123,7 @@ function AuthPage() {
                   state.userName.trim().length === 0 || loading.checkingUsername
                     ? "normal"
                     : error.userNameError.trim().length !== 0 ||
-                      usernameRegex.test(state.userName)
+                      !usernameRegex.test(state.userName)
                     ? "error"
                     : "success"
                 }

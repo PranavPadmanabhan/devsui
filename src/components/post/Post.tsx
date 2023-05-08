@@ -82,7 +82,7 @@ const RenderBottomSection = ({ type, comments, likes }: { type: PostInteractionT
                 <div className="flex flex-col items-center justify-start w-full h-auto min-h-[60px]">
                     {
                         comments.map((comment,i) => (
-                            <CommentItem comment={comment.comment} likes={comment.likes} name={comment.name} profileImage={comment.profileImage} replies={comment.replies}  />
+                            <CommentItem key={i} comment={comment.comment} likes={comment.likes} name={comment.name} profileImage={comment.profileImage} replies={comment.replies}  />
                         ) )
                     }
                 </div>

@@ -1,0 +1,54 @@
+import { ActiveDesignsIcon, ActiveHomeIcon, ActiveMarketIcon, ActiveMessagesIcon, ActiveNetworkIcon, ActiveNotificationsIcon, ActiveSettingsIcon, DesignsIcon, HomeIcon, HomeMobile, MarketIcon, MessagesIcon, NetworkIcon, NotificationsIcon, SettingsIcon } from "@/components/core/icons";
+
+export const bottomTabLinks = [
+    {
+        id:1,
+        label:"Home",
+        title:"home",
+        icon:{
+            normal:HomeIcon,
+            active:HomeMobile
+        },
+        path:"/home"
+    },
+    {
+        id:2,
+        label:"Designs",
+        title:"designs",
+        icon:{
+            normal:DesignsIcon,
+            active:ActiveDesignsIcon
+        },
+        path:"/designs"
+    },
+    {
+        id:3,
+        label:"MarketPlace",
+        title:"marketplace",
+        icon:{
+            normal:MarketIcon,
+            active:ActiveMarketIcon
+        },
+        path:"/marketplace"
+    },
+    {
+        id:4,
+        label:"Network",
+        title:"network",
+        icon:{
+            normal:NetworkIcon,
+            active:ActiveNetworkIcon
+        },
+        path:"/network"
+    },
+    {
+        id:5,
+        label:"Messages",
+        title:"messages",
+        icon:{
+            normal:MessagesIcon,
+            active:ActiveMessagesIcon
+        },
+        path:"/messages"
+    }
+]

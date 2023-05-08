@@ -7,3 +7,10 @@
 .messageTipSetup {
     top: calc(100% - 5.5px);
 }
+
+.connectButton{
+    box-shadow: 0px 0px 15px -5px #0057FF;
+}
+.inset{
+    box-shadow: inset 5px -9px 30px 10px rgba(0, 87, 255, 0.23);
+}

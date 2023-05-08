@@ -24,6 +24,7 @@ module.exports = {
         bottomTabBG:'#0B0B0B',
         messageBoxBG:'#1D1D1D',
         greyBG:"#1E1E1E",
+      
 
         // button background
         search_button: "#404040",
@@ -36,6 +37,8 @@ module.exports = {
 
         // border
         primaryBorder: "rgba(255, 255, 255, 0.07)",
+        successBorder:'#008000',
+        errorBorder:'rgba(255, 0, 0, 0.6)',
 
 
         // Gradients
@@ -103,9 +106,11 @@ module.exports = {
       fontFamily: {
         inter: ['Inter', 'sans-serif'],
         oswald: ['Oswald', 'sans-serif'],
+        averia:['Averia Sans Libre', "cursive"]
       },
       backgroundImage:{
-        testAvatar:`url(https://imgs.search.brave.com/C8RHG4Fe1_hAWrg2uRsP5S653ma89uMjKkHHfQb4POA/rs:fit:1200:1200:1/g:ce/aHR0cDovL3d3dy5i/dXNpbmVzc3B1bmRp/dC5jb20vd3AtY29u/dGVudC91cGxvYWRz/LzIwMTYvMDYvRWxv/bi1NdXNrLWFuZC1D/aG9yZS1GaXhpbmct/Um9ib3RzLmpwZw)`
+        testAvatar:`url(https://imgs.search.brave.com/C8RHG4Fe1_hAWrg2uRsP5S653ma89uMjKkHHfQb4POA/rs:fit:1200:1200:1/g:ce/aHR0cDovL3d3dy5i/dXNpbmVzc3B1bmRp/dC5jb20vd3AtY29u/dGVudC91cGxvYWRz/LzIwMTYvMDYvRWxv/bi1NdXNrLWFuZC1D/aG9yZS1GaXhpbmct/Um9ib3RzLmpwZw)`,
+        signuCover:`url(/assets/svg/bg.svg)`
       },
       keyframes: {
         flicker: {

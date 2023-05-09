@@ -10,10 +10,19 @@ export interface AppUIState {
     setIsCreatePostModalVisible:(isCreatePostModalVisible:boolean) => void;
     selectedWorkRole:WorkRoleType;
     setselectedWorkRole:(selectedWorkRole:WorkRoleType) => void;
+    user:Users;
+    setUser:(user:Users) => void;
     reset: () => void
 }
 
 export type Role = "Designer" | "Developer" | "Both"
+
+export type Users = {
+    name:string;
+    userName:string;
+    walletAddress:string;
+    email:string;
+}
 
 export type Post = {
     creatorName:string;

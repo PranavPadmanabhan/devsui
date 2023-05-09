@@ -25,7 +25,7 @@ const MessageComposer = ({ onChange, onSubmit, value,onChangeEmoji,isSending }: 
                         color="rgba(255,255,255,0.1)"
                         className='mr-4 cursor-pointer'
                     />
-                    <button className="min-h-[35px] min-w-[35px] rounded-full bg-gradient-to-tr from-primaryGradient2 to-primaryGradient1 flex items-center justify-center ">
+                    <button disabled={isSending} className="min-h-[35px] min-w-[35px] rounded-full bg-gradient-to-tr from-primaryGradient2 to-primaryGradient1 flex items-center justify-center ">
                         {isSending?(<ImSpinner10 color='white' size={22} className='animate-rotate' />):(<ChevronRoght className='scale-[0.8] ml-[5%]' />)}
                     </button>
                 </div>

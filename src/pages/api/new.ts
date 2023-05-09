@@ -10,17 +10,22 @@ export default async function handler(
     if(name && age ){
         const file = fs.readFileSync("./data/db");
         const data = JSON.parse(file as any)
+        console.log(data)
         if(data?.users){
+            const newUser = {...req.body,id:(Math.random() * 1e18).toString()}
             let updatedUser = {
-                users:[...data.users,{...req.body,id:(Math.random() * 1e18).toString()}]
+                users:[...data.users,newUser]
             }
             fs.writeFileSync("./data/db",JSON.stringify(updatedUser),"utf8")
+            res.status(200).json(newUser)
         }
         else {
+            const newUser = {...req.body,id:(Math.random() * 1e18).toString()}
             let updatedUser = {
-                users:[{...req.body,id:(Math.random() * 1e18).toString()}]
+                users:[newUser]
             }
             fs.writeFileSync("./data/db",JSON.stringify(updatedUser),"utf8")
+            res.status(200).json(newUser)
         }
     }
     else {

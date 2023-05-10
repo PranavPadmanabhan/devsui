@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import { sideBarLinks } from '@/assets/links/sidebarLinks'
+import { useAppContext } from '@/contexts/appContext';
 import { useAppUiStore } from '@/store/app';
 import { useRouter } from 'next/router'
 import React from 'react'

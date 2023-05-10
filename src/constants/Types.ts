@@ -8,8 +8,8 @@ export interface AppUIState {
     setPostType: (postType: PostType) => void;
     isCreatePostModalVisible:boolean;
     setIsCreatePostModalVisible:(isCreatePostModalVisible:boolean) => void;
-    selectedWorkRole:WorkRoleType;
-    setselectedWorkRole:(selectedWorkRole:WorkRoleType) => void;
+    selectedWorkRole:any;
+    setselectedWorkRole:(selectedWorkRole:any) => void;
     user:Users;
     setUser:(user:Users) => void;
     reset: () => void

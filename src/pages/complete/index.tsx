@@ -76,6 +76,7 @@ const Complete = () => {
             profileImage:data?.profileimage??null,
             role:data?.role??null
           })
+ 
         }
 
         setLoading({ ...loading, coverImageUploading: false });

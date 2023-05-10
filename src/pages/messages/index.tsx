@@ -75,10 +75,6 @@ const Messages = () => {
   const getMessages = async () => {
     try {
       if (isConnected && address) {
-        if (user?.name === undefined) {
-          const name = localStorage.getItem("name");
-          setUser({ ...user, name: name! });
-        }
         setInterval(async () => {
           const name = localStorage.getItem("name");
           const res = await Axios.get(
@@ -119,6 +115,7 @@ const Messages = () => {
   useEffect(() => {
     if (address && Object.keys(user).length < 2) {
       login();
+      console.log(user?.profileImage)
     } else if (!isConnected) {
       router.replace("/");
     }

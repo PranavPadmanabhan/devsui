@@ -258,8 +258,8 @@ const Complete = () => {
                 "Designer",
                 "Developer",
                 "Both"
-              ]} selectedWorkRole={role} setSelectedWorkRole={setRole} className="bg-modalBG w-[45%]" />
-              <input onChange={(e) => setState({...state,dob:e.target.value})} placeholder="Date of birth (DD/MM/YYYY)" type="text" className="w-1/2 min-h-[45px] rounded-[10px] border-[1px] border-primaryBorder bg-modalBG pl-3 box-border focus:outline-none text-white text-[1rem] " />
+              ]} selectedWorkRole={role} setSelectedWorkRole={setRole} className="bg-modalBG max-w-[250px]" />
+              <input onChange={(e) => setState({...state,dob:e.target.value})} placeholder="Date of birth (DD/MM/YYYY)" type="text" className="w-1/2 max-w-[250px] min-h-[45px] rounded-[10px] border-[1px] border-primaryBorder bg-modalBG pl-3 box-border focus:outline-none text-white text-[1rem] " />
             </div>
             <button onClick={updateDetails} className="min-w-[150px] min-h-[45px] rounded-[5px] bg-gradient-to-r from-primaryGradient1 to-primaryGradient2 mt-8 flex items-center justify-center">
             {loading.updating ? (

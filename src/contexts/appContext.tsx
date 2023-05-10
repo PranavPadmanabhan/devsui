@@ -21,7 +21,7 @@ const AppContextProvider = ({children}:{children:React.ReactNode}) => {
             walletaddress: address,
           });
           const data = await res.data;
-          if (data.walletAddress) {
+          if (data.walletAddress ) {
             setUser({
               email: data.email,
               name: data.name,
@@ -36,6 +36,9 @@ const AppContextProvider = ({children}:{children:React.ReactNode}) => {
             if(!data.role && router.pathname !== "/complete"){
               router.replace("/complete")
             }
+          }
+          else if(data.role){
+            router.replace("/home")
           }
            else {
             setUser({} as Users);

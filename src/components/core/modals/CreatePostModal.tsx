@@ -10,6 +10,7 @@ import BottomTabBar from '@/components/shared/BottomTabBar'
 const CreatePostModal = () => {
 
     const { setIsCreatePostModalVisible, postType, setPostType } = useAppUiStore()
+  
 
     return (
         <div className='fixed z-[1000] top-0 w-screen h-screen bg-black lg:bg-modalContainerBG backdrop-blur-0 lg:backdrop-blur-[10px] flex flex-col items-center justify-start lg:justify-center'>
@@ -49,6 +50,18 @@ const PostType = ({ Icon, iconColor, onClick, isActive }: { Icon: any; iconColor
 
 const RenderPostTypes = ({ postType }: { postType: PostType }) => {
     const { selectedWorkRole, setselectedWorkRole, setPostType } = useAppUiStore()
+    let jobList = [
+        "Frontend Developer",
+        "Backend Developer",
+        'Fullstack Developer',
+        'Flutter Developer',
+        'IOS Developer',
+        'ReactJS Developer',
+        'React Native Developer',
+        'AngularJS Developer',
+        'Angular Developer'
+    ]
+
     switch (postType) {
         case 'Ordinary':
             return (
@@ -93,7 +106,7 @@ const RenderPostTypes = ({ postType }: { postType: PostType }) => {
                         <span className="text-white text-[1rem] font-inter font-[500]">Amal Raj</span>
                     </div>
                     <textarea placeholder='share your thoughts..' style={{ resize: 'none' }} className='w-full min-h-[30px] text-white text-[0.9rem] font-inter focus:outline-none bg-transparent pl-5 pt-2' />
-                    <JobDropdown selectedWorkRole={selectedWorkRole} setSelectedWorkRole={setselectedWorkRole} className='self-start ml-[5%] mb-3' />
+                    <JobDropdown placeholder='select Job Role' list={jobList} selectedWorkRole={selectedWorkRole} setSelectedWorkRole={setselectedWorkRole} className='self-start ml-[5%] mb-3' />
                     <div className="w-[80%] lg:w-[75%] h-[50%] max-h-[250px] rounded-[10px] border-[1px] border-primaryBorder flex items-center p-[10px] box-border">
                         <div className="relative w-full h-full rounded-[5px] bg-media flex flex-col items-center justify-center">
                             {/* <Add onClick={() => setPostType('Ordinary')} color='white' size={26} className='absolute z-[1000] top-[2%] right-[1%] cursor-pointer rotate-45' /> */}

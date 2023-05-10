@@ -18,10 +18,15 @@ export interface AppUIState {
 export type Role = "Designer" | "Developer" | "Both"
 
 export type Users = {
-    name:string;
-    userName:string;
-    walletAddress:string;
-    email:string;
+    name:string | null;
+    userName:string | null;
+    walletAddress:string | null;
+    email:string | null;
+    role?:string | null;
+    bio?:string | null;
+    profileImage?:string | null;
+    dob?:string | null;
+    coverImage?:string | null
 }
 
 export type Post = {

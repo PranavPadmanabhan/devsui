@@ -14,3 +14,7 @@
 .inset{
     box-shadow: inset 5px -9px 30px 10px rgba(0, 87, 255, 0.23);
 }
+
+.profileCircle {
+    top: calc(100% - 65px);
+}

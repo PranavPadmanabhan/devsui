@@ -18,6 +18,7 @@ import { ImSpinner2 } from "react-icons/im";
 type Loading = {
   sending: boolean;
   creating: boolean;
+  gettingConversations:boolean
 };
 
 type Error = {
@@ -34,6 +35,7 @@ const Messages = () => {
   const [loading, setLoading] = useState<Loading>({
     sending: false,
     creating: false,
+    gettingConversations:false
   });
   const [conversations, setConversations] = useState<any[]>([]);
   const [Activeconversation, setActiveConversation] = useState<any>({});
@@ -41,6 +43,34 @@ const Messages = () => {
   const [keyWord, setKeyWord] = useState<string>("");
   const [addModalVisible, setAddModalVisible] = useState<boolean>(false);
   const [walletAddress, setWalletAddress] = useState<string>("");
+
+
+  const getConversations = async () => {
+    try {
+      if (isConnected && address) {
+        if (user?.name === undefined) {
+          const name = localStorage.getItem("name");
+          setUser({ ...user, name: name! });
+        }
+        setLoading({ ...loading, gettingConversations: true });
+          const name = localStorage.getItem("name");
+          const res = await Axios.get(
+            `/conversations/${address}?name=${user?.name??name}`
+          );
+          const data = await res.data;
+          if (data.length > 0&& data !== conversations) {
+            setConversations(data);
+          } else {
+            setConversations([]);
+          }
+          setLoading({ ...loading, gettingConversations: false });
+      } else {
+        router.replace("/");
+        alert("connect wallet");
+      }
+    } catch (error: any) {}
+  };
+
 
   const getMessages = async () => {
     try {
@@ -70,9 +100,11 @@ const Messages = () => {
 
   useEffect(() => {
     if(user.name !== undefined){
-      localStorage.setItem("name", user?.name);
+      localStorage.setItem("name", user?.name!);
     }
-    getMessages();
+    getConversations().finally(() => {
+      getMessages()
+    });
     return () => {
       setMessages([]);
     };
@@ -181,7 +213,7 @@ const Messages = () => {
                 </button>
               </div>
             )}
-            <div className="w-full h-[95%] rounded-[10px] flex flex-col items-center justify-start overflow-y-scroll box-border scrollbar-hide">
+            <div className={`w-full h-[95%] rounded-[10px] flex flex-col items-center ${loading.gettingConversations?'justify-center':'justify-start'} overflow-y-scroll box-border scrollbar-hide`}>
               {conversations.map((conversation: any, i: number) => {
                 const name = conversation?.members?.filter(
                   (item: any) => item.address !== address
@@ -207,6 +239,13 @@ const Messages = () => {
                   />
                 );
               }).reverse()}
+              {
+                loading.gettingConversations && <ImSpinner2
+                color="white"
+                size={32}
+                className="animate-rotate"
+              />
+              }
             </div>
           </div>
           <div className="w-[65%] h-full flex flex-col items-center justify-between border-[1px] bg-secondaryBG border-primaryBorder rounded-[20px]">

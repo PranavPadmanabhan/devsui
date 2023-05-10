@@ -72,7 +72,6 @@ function AuthPage() {
               walletaddress: address,
             });
             const data = await res.data;
-            console.log(data);
             if (data.walletAddress) {
               setUser({
                 email: data.email,
@@ -80,7 +79,7 @@ function AuthPage() {
                 userName: data.userName,
                 walletAddress: data.walletAddress,
               });
-              router.replace("/home");
+              router.replace("/complete");
             } else {
               setUser({} as Users);
             }
@@ -168,7 +167,12 @@ function AuthPage() {
           userName: data.userName,
           walletAddress: data.walletAddress,
         });
-        router.replace("/home");
+        if(!data.role){
+          router.replace("/complete");
+        }
+        else {
+          router.replace("/home");
+        }
       } else {
         setUser({} as Users);
       }

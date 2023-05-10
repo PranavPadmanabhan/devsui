@@ -52,14 +52,14 @@ const Complete = () => {
 
   const uploadImage = async (image: any, set: "cover" | "profile") => {
     try {
-      const uploaded = await storage.upload(image, {
-        uploadWithGatewayUrl: true,
-        uploadWithoutDirectory: true,
-      });
-
+      
       if (set === "cover") {
         setLoading({ ...loading, coverImageUploading: true });
-
+        const uploaded = await storage.upload(image, {
+          uploadWithGatewayUrl: true,
+          uploadWithoutDirectory: true,
+        });
+  
         const res = await Axios.put(`/auth/user/${address}`,{
           coverImage:uploaded
         })
@@ -81,6 +81,11 @@ const Complete = () => {
         setLoading({ ...loading, coverImageUploading: false });
       } else {
         setLoading({ ...loading, profileImageUploading: true });
+        const uploaded = await storage.upload(image, {
+          uploadWithGatewayUrl: true,
+          uploadWithoutDirectory: true,
+        });
+  
         const res = await Axios.put(`/auth/user/${address}`,{
           profileImage:uploaded
         })
@@ -134,7 +139,7 @@ const Complete = () => {
           bio:data?.bio??null,
           coverImage:data?.coverImage?? null,
           dob:data?.dob??null,
-          profileImage:data?.profileImage??null,
+          profileImage:data?.profileimage??null,
           role:data?.role??null
         })
         router.replace("/home")

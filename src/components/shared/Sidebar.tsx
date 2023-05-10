@@ -22,7 +22,7 @@ const Sidebar = () => {
             }
         </div>
         <div className="min-h-[70px] w-[90%] rounded-[25px] border-[1px] border-primaryBorder flex items-center justify-start gap-x-3 px-3 box-border mb-3">
-            <img src={user?.profileImage!} alt="" className="min-w-[45px] min-h-[45px] border-[2px] p-[1px] box-border border-primaryBorder rounded-full" />
+            <img src={user?.profileImage!} alt="" className="w-[45px] h-[45px] border-[2px] p-[1px] box-border border-primaryBorder rounded-full" />
         <h1 className="text-white">{user?.name}</h1>
         </div>
     </div>

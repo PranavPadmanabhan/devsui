@@ -198,7 +198,7 @@ function AuthPage() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <section className="w-full h-full bg-black flex items-center justify-between">
-        <section className="w-1/2 h-full flex flex-col items-center justify-center bg-slate-950 bg-signuCover bg-center bg-cover bg-no-repeat">
+        <section className={`${styles.background} w-1/2 h-full flex flex-col items-center justify-center bg-slate-950 bg-signuCover bg-center bg-cover bg-no-repeat`}>
           <div className="w-full h-full flex flex-col items-center justify-center backdrop-blur-[25px]">
             <LogoBig />
             <h1 className="text-white font-averia text-[5vw] font-[700] -mt-[3%] -mb-3">

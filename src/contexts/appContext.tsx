@@ -2,17 +2,21 @@ import Axios from '@/config/AxiosConfig'
 import { Users } from '@/constants/Types'
 import { useAppUiStore } from '@/store/app'
 import { useRouter } from 'next/router'
-import React, { useContext, useEffect } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { useAccount } from 'wagmi'
 
 type Context = {
   login:() => Promise<void>
+  conversations:any[];
+  setConversations:React.Dispatch<React.SetStateAction<any[]>>
 }
 
 const appContext = React.createContext<Context>({} as Context)
 
 const AppContextProvider = ({children}:{children:React.ReactNode}) => {
   const {user,setUser} = useAppUiStore()
+  const [conversations, setConversations] = useState<any[]>([]);
+
   const router = useRouter()
     const {address} = useAccount()
     const login = async () => {
@@ -41,12 +45,11 @@ const AppContextProvider = ({children}:{children:React.ReactNode}) => {
             if(!data.role && router.pathname !== "/complete"){
               router.replace("/complete")
             }
-            else if(data.role){
+            else if(data.role && router.pathname === "/complete"){
               router.replace("/home")
             }
           
           }
-          
           
            else {
             setUser({} as Users);
@@ -57,7 +60,7 @@ const AppContextProvider = ({children}:{children:React.ReactNode}) => {
         }
       };
 
-    const value = { login }
+    const value = { login,conversations,setConversations }
 
     
   return (

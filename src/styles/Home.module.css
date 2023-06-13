@@ -18,3 +18,9 @@
 .profileCircle {
     top: calc(100% - 65px);
 }
+
+.background {
+    -webkit-backdrop-filter: blur(25px);
+    backdrop-filter: blur(25px);
+
+}

@@ -8,17 +8,19 @@ import Axios from "@/config/AxiosConfig";
 import MainLayout from "@/layouts/MainLayout";
 import { useAppUiStore } from "@/store/app";
 import { useRouter } from "next/router";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import InfiniteScroll from "react-infinite-scroller";
 import { useAccount } from "wagmi";
 import { FaPlus } from "react-icons/fa";
 import { useAppContext } from "@/contexts/appContext";
 import { ImSpinner2 } from "react-icons/im";
+import Pusher from "pusher-js";
+import { io } from "socket.io-client";
 
 type Loading = {
   sending: boolean;
   creating: boolean;
-  gettingConversations:boolean
+  gettingConversations: boolean;
 };
 
 type Error = {
@@ -28,66 +30,64 @@ type Error = {
 const Messages = () => {
   const { address, isConnected } = useAccount();
   const { user, setUser } = useAppUiStore();
-  const { login } = useAppContext();
+  const { login, conversations, setConversations } = useAppContext();
   const router = useRouter();
-  const [messages, setMessages] = useState<any[]>([]);
   const [message, setMessage] = useState<string>("");
   const [loading, setLoading] = useState<Loading>({
     sending: false,
     creating: false,
-    gettingConversations:false
+    gettingConversations: false,
   });
-  const [conversations, setConversations] = useState<any[]>([]);
   const [Activeconversation, setActiveConversation] = useState<any>({});
   const [error, setError] = useState<Error>({ creationError: "" });
   const [keyWord, setKeyWord] = useState<string>("");
   const [addModalVisible, setAddModalVisible] = useState<boolean>(false);
   const [walletAddress, setWalletAddress] = useState<string>("");
+  const [updatedConvos, setupdatedConvos] = useState<string[]>([]);
+  const [isOnline, setIsOnline] = useState<boolean>(false);
+  const socket = io(process.env.NEXT_PUBLIC_API_URL!)
 
+  const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_ID!, {
+    cluster: "ap2",
+  });
 
   const getConversations = async () => {
     try {
       if (isConnected && address) {
-        if (user?.name === undefined) {
-          const name = localStorage.getItem("name");
-          setUser({ ...user, name: name! });
-        }
+        // if (user?.name === undefined) {
+        //   const name = localStorage.getItem("name");
+        //   setUser({ ...user, name: name! });
+        // }
         setLoading({ ...loading, gettingConversations: true });
-          const name = localStorage.getItem("name");
-          const res = await Axios.get(
-            `/conversations/${address}?name=${user?.name??name}`
-          );
-          const data = await res.data;
-          if (data.length > 0&& data !== conversations) {
-            setConversations(data);
-          } else {
-            setConversations([]);
-          }
-          setLoading({ ...loading, gettingConversations: false });
+        const name = localStorage.getItem("name");
+        const res = await Axios.get(
+          `/conversations/${address}?name=${user?.name ?? name}`
+        );
+        const data = await res.data;
+        localStorage.removeItem(`${address}-conversations`);
+        setConversations(data);
+        setLoading({ ...loading, gettingConversations: false });
       } else {
+        setConversations([]);
         router.replace("/");
         alert("connect wallet");
       }
     } catch (error: any) {}
   };
 
-
-  const getMessages = async () => {
+  const syncConversations = async () => {
     try {
       if (isConnected && address) {
-        setInterval(async () => {
-          const name = localStorage.getItem("name");
-          const res = await Axios.get(
-            `/conversations/${address}?name=${user?.name??name}`
-          );
-          const data = await res.data;
-          if (data.length > 0&& data !== conversations) {
-            setConversations(data);
-          } else {
-            setConversations([]);
-          }
-        }, 2000);
+
+        const name = localStorage.getItem("name");
+        const res = await Axios.get(
+          `/conversations/${address}?name=${user?.name ?? name}`
+        );
+        const data = await res.data;
+        localStorage.removeItem(`${address}-conversations`);
+        setConversations(data);
       } else {
+        setConversations([]);
         router.replace("/");
         alert("connect wallet");
       }
@@ -95,29 +95,81 @@ const Messages = () => {
   };
 
   useEffect(() => {
-    if(user.name !== undefined){
+    socket.emit("online",address)
+
+    if(socket.disconnected){
+      socket.emit("offline",address)
+
+    }
+    else {
+      socket.emit("offline",address)
+
+    }
+  },[socket.connected])
+
+  useEffect(() => {
+    if (user.name !== undefined) {
       localStorage.setItem("name", user?.name!);
     }
-    getConversations().finally(() => {
-      getMessages()
+    getConversations();
+    var channel = pusher.subscribe("messages");
+    channel.bind("update", (data: any) => {
+      syncConversations();
+      setupdatedConvos([...updatedConvos, data.message]);
     });
+
+    channel.bind("insert", (data: any) => {
+      syncConversations();
+    });
+
     return () => {
-      setMessages([]);
+      setConversations([]);
+
     };
   }, []);
 
+  const updateMessageStatus = async () => {
+    
+    try {
+      const userData = Activeconversation?.details?.filter(
+        (item: any) => item.walletAddress !== address
+      )[0];
+      setInterval(async() => {
+        const res = await Axios.get(
+          `/auth/user/${userData?.walletAddress}`
+        );
+        const data = await res.data;
+         setIsOnline(data?.isOnline)
+      },5000)
+    } catch (error) {}
+  };
+
   useEffect(() => {
-    const index = localStorage.getItem("activeChatIndex");
+    const index = localStorage.getItem(`${address}-activeChatIndex`);
     const i = parseInt(index!);
-    setActiveConversation(conversations[i]);
+    if (Activeconversation !== conversations[i]) {
+      setActiveConversation(conversations[i]);
+    }
   }, [conversations]);
+
+  useEffect(() => {
+      updateMessageStatus();
+      if (updatedConvos.includes(Activeconversation?._id)) {
+        setupdatedConvos(
+          updatedConvos.filter((item) => item !== Activeconversation?._id)
+        );
+      }
+    
+  }, [Activeconversation]);
 
   useEffect(() => {
     if (address && Object.keys(user).length < 2) {
       login();
-      console.log(user?.profileImage)
+      console.log(user?.profileImage);
     } else if (!isConnected) {
       router.replace("/");
+    } else if (!isConnected) {
+      setConversations([]);
     }
   }, [isConnected, address]);
 
@@ -130,7 +182,6 @@ const Messages = () => {
           message,
         });
         const data = await res.data;
-        console.log(data)
         if (data) {
           setActiveConversation(data);
           setMessage("");
@@ -154,19 +205,17 @@ const Messages = () => {
           receiver: walletAddress,
         });
         const data = await res.data;
-        console.log(data)
+        console.log(data);
         if (data.error) {
           setError({ ...error, creationError: data.error });
         } else {
           setError({ ...error, creationError: "" });
           setConversations(data);
-          setAddModalVisible(false)
+          setAddModalVisible(false);
         }
         setLoading({ ...loading, creating: false });
-
       } catch (error) {
         setLoading({ ...loading, creating: false });
-
       }
     }
   };
@@ -205,53 +254,84 @@ const Messages = () => {
                       className="animate-rotate"
                     />
                   ) : (
-                   <h1 className="text-white text-[0.9rem]">Add</h1>
+                    <h1 className="text-white text-[0.9rem]">Add</h1>
                   )}
                 </button>
               </div>
             )}
-            <div className={`w-full h-[95%] rounded-[10px] flex flex-col items-center ${loading.gettingConversations?'justify-center':'justify-start'} overflow-y-scroll box-border scrollbar-hide`}>
-              {conversations.map((conversation: any, i: number) => {
-                const name = conversation?.members?.filter(
-                  (item: any) => item.address !== address
-                )[0]?.name;
-                const lastMessage =
-                  conversation?.messages?.length > 0
-                    ? `${conversation.messages[
-                        conversation.messages.length - 1
-                      ].message.slice(0, 10)}...`
-                    : "";
-                return (
-                  <MessageBox
-                    onClick={() => {
-                      if (window) {
-                        localStorage.setItem("activeChatIndex", i.toString());
-                      }
-                      setActiveConversation(conversation);
-                    }}
-                    key={i}
-                    name={name}
-                    lastMessage={lastMessage}
-                    isActive={Activeconversation === conversation}
-                  />
-                );
-              }).reverse()}
-              {
-                loading.gettingConversations && <ImSpinner2
-                color="white"
-                size={32}
-                className="animate-rotate"
-              />
-              }
+            <div
+              className={`w-full h-[95%] rounded-[10px] flex flex-col items-center ${
+                loading.gettingConversations
+                  ? "justify-center"
+                  : "justify-start"
+              } overflow-y-scroll box-border scrollbar-hide`}
+            >
+              {!loading.gettingConversations &&
+                conversations
+                  .sort((a, b) => {
+                    if (a.timeStamp > b.timeStamp) {
+                      return 1;
+                    } else {
+                      return -1;
+                    }
+                  })
+                  .map((conversation: any, i: number) => {
+                    const userData = conversation?.details?.filter(
+                      (item: any) => item.walletAddress !== address
+                    )[0];
+                    const hasNewMessage = updatedConvos.includes(conversation._id)
+
+                    const lastMessage =
+                      conversation?.messages?.length > 0
+                        ? `${conversation.messages[
+                            conversation.messages.length - 1
+                          ].message.slice(0, 10)}...`
+                        : "";
+                    return (
+                      <MessageBox
+                        onClick={() => {
+                          if (window) {
+                            localStorage.setItem(
+                              `${address}-activeChatIndex`,
+                              i.toString()
+                            );
+                          }
+                          setActiveConversation(conversation);
+                        }}
+                        key={i}
+                        timeStamp={conversation.timeStamp}
+                        name={userData?.name}
+                        image={userData?.profileimage}
+                        hasNewMessage={hasNewMessage}
+                        lastMessage={lastMessage}
+                        isActive={Activeconversation === conversation}
+                        isOnline={Activeconversation === conversation && isOnline }
+                      />
+                    );
+                  })
+                  .reverse()}
+              {loading.gettingConversations && (
+                <ImSpinner2
+                  color="white"
+                  size={32}
+                  className="animate-rotate"
+                />
+              )}
             </div>
           </div>
           <div className="w-[65%] h-full flex flex-col items-center justify-between border-[1px] bg-secondaryBG border-primaryBorder rounded-[20px]">
             <MessageHeader
+              image={
+                Activeconversation?.details?.filter(
+                  (item: any) => item.walletAddress !== address
+                )[0]?.profileimage
+              }
               name={
-                Activeconversation?.members?.filter(
-                  (item: any) => item.address !== address
+                Activeconversation?.details?.filter(
+                  (item: any) => item.walletAddress !== address
                 )[0]?.name
               }
+            isOnline={isOnline}
             />
             <InfiniteScroll
               className="w-full h-full flex flex-col-reverse items-center justify-start overflow-y-scroll scrollbar-hide px-2 pb-2 box-border"
@@ -278,7 +358,7 @@ const Messages = () => {
                   />
                 ))
                 .reverse()}
-                <div />
+              <div />
             </InfiniteScroll>
             <MessageComposer
               isSending={loading.sending}

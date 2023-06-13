@@ -1,4 +1,3 @@
-import { WorkRoleType } from '@/constants/Types';
 import { ArrowDown2 } from 'iconsax-react'
 import React, { Dispatch, SetStateAction, useState } from 'react'
 import { Tick } from '../core/icons';
@@ -11,7 +10,7 @@ const JobDropdown = ({ className, selectedWorkRole, setSelectedWorkRole,list,pla
     return (
         <div className={`${className} relative min-h-[45px] w-full min-w-[150px]  rounded-[10px] flex flex-col items-center justify-start `}>
             <div onClick={() => setIsDropdownVisible(!isDropdownVisible)} className="cursor-pointer border-[1px] border-primaryBorder w-full min-h-[45px] rounded-[10px] flex items-center justify-between px-[5%] box-border ">
-                <span className="text-white_half_opacity text-[0.9rem] font-inter font-[500] px-[2%] box-border ">{selectedWorkRole === ""? placeholder:selectedWorkRole}</span>
+                <span className="text-white_half_opacity text-[0.9rem] font-inter font-[500] px-[2%] box-border ">{!selectedWorkRole? placeholder:selectedWorkRole}</span>
                 <ArrowDown2 variant='Bold' color='white' size={20} />
             </div>
             {

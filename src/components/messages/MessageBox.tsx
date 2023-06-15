@@ -12,9 +12,9 @@ const MessageBox = ({ name, lastMessage,onClick,isActive, image, hasNewMessage,t
   return (
     <div onClick={onClick} className={`relative cursor-pointer w-[92%] min-h-[65px] rounded-[10px] bg-messageBoxBG border-[1px] ${isActive?'border-blue-600':'border-primaryBorder'} mb-2 flex items-center justify-between px-[4%] box-border`}>
         <div style={{backgroundImage:`url(${image!})`}} className="relative min-w-[40px] min-h-[40px] rounded-full bg-white bg-center bg-no-repeat bg-cover mr-[5%]">
-            {
+            {/* {
               isOnline ? <div className="absolute bottom-[1px] right-[0px] min-w-[12px] min-h-[12px] bg-green-500 rounded-full"></div>:<div className="absolute bottom-[1px] right-[0px] min-w-[12px] min-h-[12px] bg-gray-300 rounded-full"></div>
-            }
+            } */}
         </div>
         <div className="w-full h-full flex flex-col items-start justify-center">
             <span className="text-white text-[1rem] font-inter font-[500] ">{name}</span>

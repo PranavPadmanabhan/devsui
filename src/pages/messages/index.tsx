@@ -43,7 +43,6 @@ const Messages = () => {
   const [addModalVisible, setAddModalVisible] = useState<boolean>(false);
   const [walletAddress, setWalletAddress] = useState<string>("");
   const [updatedConvos, setupdatedConvos] = useState<string[]>([]);
-  const [isOnline, setIsOnline] = useState<boolean>(false);
 
   const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_ID!, {
     cluster: "ap2",
@@ -116,21 +115,7 @@ const Messages = () => {
     };
   }, []);
 
-  const updateMessageStatus = async () => {
-    
-    try {
-      const userData = Activeconversation?.details?.filter(
-        (item: any) => item.walletAddress !== address
-      )[0];
-      setInterval(async() => {
-        const res = await Axios.get(
-          `/auth/user/${userData?.walletAddress}`
-        );
-        const data = await res.data;
-         setIsOnline(data?.isOnline)
-      },5000)
-    } catch (error) {}
-  };
+ 
 
   useEffect(() => {
     const index = localStorage.getItem(`${address}-activeChatIndex`);
@@ -141,7 +126,6 @@ const Messages = () => {
   }, [conversations]);
 
   useEffect(() => {
-      updateMessageStatus();
       if (updatedConvos.includes(Activeconversation?._id)) {
         setupdatedConvos(
           updatedConvos.filter((item) => item !== Activeconversation?._id)
@@ -293,7 +277,6 @@ const Messages = () => {
                         hasNewMessage={hasNewMessage}
                         lastMessage={lastMessage}
                         isActive={Activeconversation === conversation}
-                        isOnline={Activeconversation === conversation && isOnline }
                       />
                     );
                   })
@@ -319,7 +302,6 @@ const Messages = () => {
                   (item: any) => item.walletAddress !== address
                 )[0]?.name
               }
-            isOnline={isOnline}
             />
             <InfiniteScroll
               className="w-full h-full flex flex-col-reverse items-center justify-start overflow-y-scroll scrollbar-hide px-2 pb-2 box-border"

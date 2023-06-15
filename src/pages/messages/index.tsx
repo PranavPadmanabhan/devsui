@@ -15,7 +15,6 @@ import { FaPlus } from "react-icons/fa";
 import { useAppContext } from "@/contexts/appContext";
 import { ImSpinner2 } from "react-icons/im";
 import Pusher from "pusher-js";
-import { io } from "socket.io-client";
 
 type Loading = {
   sending: boolean;
@@ -45,7 +44,6 @@ const Messages = () => {
   const [walletAddress, setWalletAddress] = useState<string>("");
   const [updatedConvos, setupdatedConvos] = useState<string[]>([]);
   const [isOnline, setIsOnline] = useState<boolean>(false);
-  const socket = io(process.env.NEXT_PUBLIC_API_URL!)
 
   const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_ID!, {
     cluster: "ap2",
@@ -94,18 +92,8 @@ const Messages = () => {
     } catch (error: any) {}
   };
 
-  useEffect(() => {
-    socket.emit("online",address)
 
-    if(socket.disconnected){
-      socket.emit("offline",address)
-
-    }
-    else {
-      socket.emit("offline",address)
-
-    }
-  },[socket.connected])
+  
 
   useEffect(() => {
     if (user.name !== undefined) {

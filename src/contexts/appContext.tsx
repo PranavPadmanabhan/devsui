@@ -9,6 +9,10 @@ type Context = {
   login:() => Promise<void>
   conversations:any[];
   setConversations:React.Dispatch<React.SetStateAction<any[]>>
+  posts:any[];
+  setPosts:React.Dispatch<React.SetStateAction<any[]>>
+  isFreelance:boolean;
+  setIsFreelance:React.Dispatch<React.SetStateAction<boolean>>
 }
 
 const appContext = React.createContext<Context>({} as Context)
@@ -16,6 +20,9 @@ const appContext = React.createContext<Context>({} as Context)
 const AppContextProvider = ({children}:{children:React.ReactNode}) => {
   const {user,setUser} = useAppUiStore()
   const [conversations, setConversations] = useState<any[]>([]);
+  const [posts, setPosts] = useState<any[]>([]);
+  const [isFreelance, setIsFreelance] = useState<boolean>(false);
+
 
   const router = useRouter()
     const {address} = useAccount()
@@ -60,7 +67,7 @@ const AppContextProvider = ({children}:{children:React.ReactNode}) => {
         }
       };
 
-    const value = { login,conversations,setConversations }
+    const value = { login,conversations,setConversations,posts,setPosts,isFreelance,setIsFreelance }
 
     
   return (

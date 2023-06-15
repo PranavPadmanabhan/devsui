@@ -1,5 +1,5 @@
 
-export type PostType = "Ordinary" | "Media" | "Work" | "Event";
+export type PostType = "Ordinary" | "Media" | "Work" | "Event" | "Freelance";
 
 export type WorkRoleType = "Frontend Developer" | "Backend Developer" | "Fullstack Developer" | "Flutter Developer" | "IOS Developer" | "ReactJS Developer" | "React Native Developer" | "AngularJS Developer" | "Angular Developer" | null
 
@@ -31,12 +31,14 @@ export type Users = {
 
 export type Post = {
     creatorName:string;
+    profileImage:string;
     userName:string;
     subject?:string;
     role:Role;
+    type:any
     content:string;
-    image?:string;
-    likes:number;
+    images:any[];
+    likes:any[];
     comments:any[];
 }
 

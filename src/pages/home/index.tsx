@@ -1,30 +1,82 @@
+/* eslint-disable @next/next/no-img-element */
 import Post from "@/components/post/Post";
 import MainLayout from "@/layouts/MainLayout";
 import SearchPanel from "@/components/home/SearchPanel";
 import Head from "next/head";
 import ProfileSuggestionItem from "@/components/home/ProfileSuggestionItem";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Add } from "iconsax-react";
 import NavBar from "@/components/shared/NavBar";
 import { useAppContext } from "@/contexts/appContext";
 import { useAccount } from "wagmi";
 import { useRouter } from "next/router";
+import Axios from "@/config/AxiosConfig";
+import { PostType } from "@/constants/Types";
+import Lottie from "lottie-react";
+import animation from "../../../public/assets/gif/nodata.json";
+import { ImSpinner2 } from "react-icons/im";
+
+type Loading = {
+  creatingPost: boolean;
+  gettingPosts: boolean;
+};
 
 export default function Home() {
-
-  const { login } = useAppContext()
-  const { isConnected,address } = useAccount()
-  const router = useRouter()
+  const { login, posts, setPosts } = useAppContext();
+  const { isConnected, address } = useAccount();
+  const router = useRouter();
+  const [loading, setLoading] = useState<Loading>({
+    creatingPost: false,
+    gettingPosts: false,
+  });
 
   useEffect(() => {
-    if( isConnected && address){
-      login()
+    if (isConnected && address) {
+      login();
+    } else {
+      router.replace("/");
     }
-    else {
-      router.replace("/")
+  }, [isConnected, address]);
+
+  const getPosts = async () => {
+    try {
+      setLoading({ ...loading, gettingPosts: true });
+      const res = await Axios.get("/posts");
+      const data = await res.data;
+      if (data?.length > 0) {
+        setPosts(data
+        );
+      } else {
+        setPosts([]);
+      }
+      setLoading({ ...loading, gettingPosts: false });
+    } catch (error) {
+      setLoading({ ...loading, gettingPosts: false });
     }
-  }, [isConnected,address])
-  
+  };
+
+  useEffect(() => {
+    getPosts();
+  }, []);
+
+  const getPostSubject = (type: any | PostType, jobRole: any) => {
+    switch (type) {
+      case "Ordinary":
+        return "shared a Post";
+
+      case "Media":
+        return "shared a Post";
+      case "Work":
+        return `is searching for ${jobRole}`;
+      case "Event":
+        return "shared an Event";
+      case "Freelance":
+        return "shared a Freelance Job";
+      default:
+        return "shared a Post";
+    }
+  };
+
 
   return (
     <MainLayout>
@@ -38,45 +90,44 @@ export default function Home() {
         <section className="w-full lg:w-[65%] max-w-[550px] mx-0 lg:mx-[2%] h-full lg:h-[95%] flex flex-col items-center justify-start pb-[60px] lg:pb-0 box-border">
           <NavBar />
           <SearchPanel />
-          <div className="mt-2 w-full lg:w-[98%] h-full flex flex-col items-center justify-start overflow-y-scroll scrollbar-hide rounded-[10px] ">
-            <Post
-              creatorName="Athul Vishnu"
-              userName="athulvishnu"
-              role="Designer"
-              content={`Hey there We're hiring! Join our team as a software developer and help us build innovative solutions that make a difference in people's lives.`}
-              image="https://imgs.search.brave.com/DstdE0diubtZKHMYNvCr7GvOhd1aSF_ge2h8bUp6NH4/rs:fit:1200:1156:1/g:ce/aHR0cHM6Ly9kb3du/bG9hZHBzZC5jYy93/cC1jb250ZW50L3Vw/bG9hZHMvQm9sZC1D/b2xvci1GbGF0LVdl/Yi1VSS1FbGVtZW50/cy1LaXQucG5n"
-              subject="is Searching for an efficient Designer"
-              comments={[{ comment: "dmkslkd" }]}
-              likes={3}
-            />
-            <Post
-              creatorName="Rahul Mohan"
-              userName="rahulmohan"
-              role="Developer"
-              content={`Hey there We're hiring! Join our team as a software developer and help us build innovative solutions that make a difference in people's lives.`}
-              image="https://imgs.search.brave.com/hkXkKx5h--XgseaurYDNRPmUA0D95MZ_Uuso-xfz7vI/rs:fit:1200:1200:1/g:ce/aHR0cHM6Ly9pLnBp/bmltZy5jb20vb3Jp/Z2luYWxzLzEzLzZh/LzBiLzEzNmEwYjY1/NzEyNjA2MDUyNGVm/YmViMTc2OTlkYjlj/LnBuZw"
-              subject="is Searching for an efficient Developer"
-              comments={[]}
-              likes={0}
-            />
-            <Post
-              creatorName="Amal Raj"
-              userName="amalraj"
-              role="Developer"
-              content={`Hey there We're hiring! Join our team as a software developer and help us build innovative solutions that make a difference in people's lives.`}
-              comments={[]}
-              likes={0}
-            />
-            <Post
-              creatorName="Sharath "
-              userName="sharath"
-              role="Developer"
-              content={`Hey there We're hiring! Join our team as a software developer and help us build innovative solutions that make a difference in people's lives.`}
-              image="https://imgs.search.brave.com/aNUAD9lIUVepWtHL4W_sNKeKwsRVOzv9e7rzYty4S_w/rs:fit:1200:1200:1/g:ce/aHR0cHM6Ly9jZG4u/ZHJpYmJibGUuY29t/L3VzZXJzLzIzOTkx/MDIvc2NyZWVuc2hv/dHMvMTM4NjkyOTgv/Y2hhdGludGVyZmFj/ZS1kcmliYmJsZV80/eC5wbmc"
-              subject="is Searching for an efficient Developer"
-              comments={[]}
-              likes={0}
-            />
+          <div
+            className={`mt-2 w-full lg:w-[98%] h-full flex flex-col items-center ${
+              posts.length <= 0 || loading.gettingPosts
+                ? "justify-center"
+                : "justify-start"
+            } overflow-y-scroll scrollbar-hide rounded-[10px] `}
+          >
+            {posts
+              ?.sort((a: any, b: any) => {
+                if (a.createdAt > b.createdAt) {
+                  return -1;
+                } else {
+                  return 1;
+                }
+              })
+              .map((post, i) => {
+                return (
+                  <Post
+                    key={i}
+                    type={post?.type}
+                    creatorName={post?.createdBy.name}
+                    userName={post?.createdBy.userName}
+                    profileImage={post?.createdBy?.profileimage}
+                    role={post?.createdBy.role}
+                    content={post?.content}
+                    images={post?.images}
+                    subject={getPostSubject(post?.type, post?.jobRole)}
+                    comments={post.comments}
+                    likes={post.likes}
+                  />
+                );
+              })}
+            {posts.length <= 0 && !loading.gettingPosts && (
+              <Lottie animationData={animation} loop={true} />
+            )}
+            {loading.gettingPosts && (
+              <ImSpinner2 color="white" size={26} className="animate-rotate" />
+            )}
           </div>
         </section>
         <section className="w-[35%] h-[95%] max-w-[260px] hidden lg:flex  flex-col items-center justify-start">

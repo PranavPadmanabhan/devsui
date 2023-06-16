@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import { useAppUiStore } from "@/store/app";
 import {
   Add,
@@ -18,6 +19,7 @@ import Axios from "@/config/AxiosConfig";
 import { useAccount } from "wagmi";
 import { BsCheckLg } from "react-icons/bs";
 import { ImSpinner2 } from "react-icons/im";
+import { useStorageUpload } from "@thirdweb-dev/react";
 
 const CreatePostModal = () => {
   const {
@@ -25,13 +27,28 @@ const CreatePostModal = () => {
     postType,
     setPostType,
     selectedWorkRole,
-    user
+    user,
   } = useAppUiStore();
   const { posts, setPosts, isFreelance, setIsFreelance } = useAppContext();
   const { address, isConnected } = useAccount();
   const [content, setContent] = useState<string>("");
-  const [images, setImages] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const { mutateAsync: upload, isLoading, isSuccess } = useStorageUpload();
+  const [files, setFiles] = useState<any[]>([]);
+
+  const uploadFiles = async () => {
+    const uploadedData = await upload({
+      data: [...files],
+      options: {
+        onProgress: (e: any) => {
+          // setUploadingRate(Math.round((e.progress / e.total) * 100))
+        },
+        uploadWithGatewayUrl: true,
+        uploadWithoutDirectory: false,
+      },
+    });
+    return uploadedData;
+  };
 
   const createPost = async () => {
     if (isConnected && address && user?.walletAddress) {
@@ -39,6 +56,7 @@ const CreatePostModal = () => {
 
       try {
         setLoading(true);
+        const images = await uploadFiles();
         if (postType === "Ordinary") {
           body = {
             content,
@@ -56,6 +74,8 @@ const CreatePostModal = () => {
           body = {
             content,
             type: postType,
+            images,
+            jobRole: selectedWorkRole,
             walletaddress: user?.walletAddress,
           };
         } else if (postType === "Event") {
@@ -64,7 +84,6 @@ const CreatePostModal = () => {
             type: postType,
             images,
             walletaddress: user?.walletAddress,
-            jobRole: selectedWorkRole,
           };
         } else if (isFreelance) {
           body = {
@@ -79,14 +98,14 @@ const CreatePostModal = () => {
         const data = await res.data;
         setPosts(data);
         setLoading(false);
-        setContent("")
-        setIsCreatePostModalVisible(false)
-        setImages([])
+        setContent("");
+        setIsCreatePostModalVisible(false);
+        setFiles([]);
       } catch (error) {
         setLoading(false);
-        setIsCreatePostModalVisible(false)
-        setContent("")
-        setImages([])
+        setIsCreatePostModalVisible(false);
+        setContent("");
+        setFiles([]);
       }
     } else {
       alert("Connect Wallet!!");
@@ -115,12 +134,14 @@ const CreatePostModal = () => {
           content={content}
           setContent={setContent}
           user={user}
+          setFiles={setFiles}
+          files={files}
         />
-        <div className="w-[87%] min-h-[50px] rounded-[30px] border-[1px] border-primaryBorder flex items-center justify-between pl-[2%] pr-[4px] box-border mb-3 mt-2">
+        <div className={`w-[87%] min-h-[50px]  rounded-[30px] border-[1px] border-primaryBorder flex items-center justify-between pl-[2%] pr-[4px] box-border mb-6 ${files.length>2?'-mt-4':'mt-2'}`}>
           <span className="text-[0.8rem] lg:text-[0.9rem] text-white_half_opacity font-inter font-[400]">
             Add your post
           </span>
-          <div className="w-[67%] lg:w-[55%] h-full flex items-center justify-between">
+          <div className="w-[67%] lg:w-[55%] h-full  flex items-center justify-between">
             <PostType
               onClick={() => setPostType("Ordinary")}
               Icon={Magicpen}
@@ -145,7 +166,10 @@ const CreatePostModal = () => {
               iconColor="#F94284"
               isActive={postType === "Event"}
             />
-            <button onClick={createPost} className="min-h-[38px] min-w-[38px] rounded-full bg-gradient-to-tr from-primaryGradient2 to-primaryGradient1 flex items-center justify-center ">
+            <button
+              onClick={createPost}
+              className="min-h-[38px] min-w-[38px] rounded-full bg-gradient-to-tr from-primaryGradient2 to-primaryGradient1 flex items-center justify-center "
+            >
               {loading ? (
                 <ImSpinner2
                   color="white"
@@ -193,17 +217,22 @@ const RenderPostTypes = ({
   setIsFreelance,
   content,
   setContent,
-  user
+  user,
+  setFiles,
+  files,
 }: {
   postType: PostType;
   isFreelance: boolean;
   setIsFreelance: any;
   setContent: any;
   content: string;
-  user:any
+  user: any;
+  setFiles: any;
+  files: any[];
 }) => {
   const { selectedWorkRole, setselectedWorkRole, setPostType } =
     useAppUiStore();
+
   let jobList = [
     "Frontend Developer",
     "Backend Developer",
@@ -223,7 +252,10 @@ const RenderPostTypes = ({
       return (
         <div className="w-full h-full flex flex-col items-center justify-start">
           <div className="min-h-[60px] w-full flex items-center justify-start pl-5 box-border gap-x-2">
-            <div style={{backgroundImage : `url(${user?.profileImage})`}} className="min-w-[45px] min-h-[45px] rounded-full bg-white bg-no-repeat bg-center bg-cover "></div>
+            <div
+              style={{ backgroundImage: `url(${user?.profileImage})` }}
+              className="min-w-[45px] min-h-[45px] rounded-full bg-white bg-no-repeat bg-center bg-cover "
+            ></div>
             <span className="text-white text-[1rem] font-inter font-[500]">
               {user?.name}
             </span>
@@ -241,7 +273,10 @@ const RenderPostTypes = ({
       return (
         <div className="w-full h-full flex flex-col items-center justify-start">
           <div className="min-h-[60px] w-full flex items-center justify-start px-5 box-border gap-x-2">
-            <div style={{backgroundImage : `url(${user?.profileImage})`}} className="min-w-[45px] min-h-[45px] rounded-full bg-white bg-no-repeat bg-center bg-cover "></div>
+            <div
+              style={{ backgroundImage: `url(${user?.profileImage})` }}
+              className="min-w-[45px] min-h-[45px] rounded-full bg-white bg-no-repeat bg-center bg-cover "
+            ></div>
             <span className="text-white text-[1rem] font-inter font-[500]">
               {user?.name}
             </span>
@@ -253,25 +288,74 @@ const RenderPostTypes = ({
             value={content}
             className="w-full min-h-[60px]  text-white text-[0.9rem] font-inter focus:outline-none bg-transparent px-5 pt-2"
           />
-          <div className="w-[80%] lg:w-[75%] h-[50%] max-h-[250px] rounded-[10px] border-[1px] border-primaryBorder flex items-center p-[10px] box-border">
-            <div className="relative w-full h-full rounded-[5px] bg-media flex flex-col items-center justify-center">
-              {/* <Add onClick={() => setPostType('Ordinary')} color='white' size={26} className='absolute z-[1000] top-[2%] right-[1%] cursor-pointer rotate-45' /> */}
-              <div className="min-h-[40px] min-w-[40px] rounded-full bg-lightGrey flex flex-col items-center justify-center ">
-                <GalleryAdd variant="Bold" color="white" size={26} />
+          <div className="relative w-[80%] lg:w-[75%] h-[50%] max-h-[250px] rounded-[10px] border-[1px] border-primaryBorder flex items-center p-[10px] box-border">
+            {files.length > 0 && (
+              <div className="absolute z-[1000] -top-[13px] -right-[13px] bg-gray-400 min-h-[30px] min-w-[30px] rounded-full flex items-center justify-center ">
+                <Add
+                  onClick={() => setFiles([])}
+                  color="white"
+                  size={26}
+                  className=" cursor-pointer rotate-45"
+                />
               </div>
-              <span className="text-white text-[1.1rem] font-inter font-[700] mt-1">
-                Add Photo/Video
-              </span>
-              <span className="text-white_half_opacity text-[0.9rem] font-inter font-[500]">
-                drag and drop to add file
-              </span>
-              <input
-                type="file"
-                name=""
-                id=""
-                className="absolute top-0 border-2 bottom-0 m-auto h-full w-full cursor-pointer opacity-0"
-              />
-            </div>
+            )}
+            {files.length <= 0 ? (
+              <div className="relative w-full h-full rounded-[5px] bg-media flex flex-col items-center justify-center">
+                {/* <Add onClick={() => setPostType('Ordinary')} color='white' size={26} className='absolute z-[1000] top-[2%] right-[1%] cursor-pointer rotate-45' /> */}
+                <div className="min-h-[40px] min-w-[40px] rounded-full bg-lightGrey flex flex-col items-center justify-center ">
+                  <GalleryAdd variant="Bold" color="white" size={26} />
+                </div>
+                <span className="text-white text-[1.1rem] font-inter font-[700] mt-1">
+                  Add Photo/Video
+                </span>
+                <span className="text-white_half_opacity text-[0.9rem] font-inter font-[500]">
+                  drag and drop to add file
+                </span>
+                <input
+                  onChange={(e) => {
+                    if (!e.target.files) {
+                      return;
+                    }
+                    console.log(Object.values(e.target.files).length);
+                    setFiles(Object.values(e.target.files));
+                  }}
+                  type="file"
+                  multiple
+                  name=""
+                  id=""
+                  className="absolute top-0 border-2 bottom-0 m-auto h-full w-full cursor-pointer opacity-0"
+                />
+              </div>
+            ) : (
+              <div
+                className={`relative w-full h-full rounded-[5px] bg-media grid ${
+                  files.length > 1 ? "grid-cols-2" : "grid-cols-1"
+                } place-content-start place-items-center overflow-x-hidden overflow-y-scroll scrollbar-hide`}
+              >
+                {files.map((item, i) => (
+                  <img
+                    key={i}
+                    src={URL.createObjectURL(item)}
+                    alt=""
+                    className="w-full h-full object-contain border-[1px] border-gray-700"
+                  />
+                ))}
+                <input
+                  onChange={(e) => {
+                    if (!e.target.files) {
+                      return;
+                    }
+                    console.log(Object.values(e.target.files).length);
+                    setFiles(Object.values(e.target.files));
+                  }}
+                  type="file"
+                  multiple
+                  name=""
+                  id=""
+                  className="absolute top-0 border-2 bottom-0 m-auto h-full w-full cursor-pointer opacity-0"
+                />
+              </div>
+            )}
           </div>
           <div className="min-h-[20px] w-full flex items-center justify-start my-2 pl-[14%] box-border">
             <div
@@ -294,7 +378,10 @@ const RenderPostTypes = ({
       return (
         <div className="w-full h-full flex flex-col items-center justify-start">
           <div className="min-h-[60px] w-full flex items-center justify-start px-5 box-border gap-x-2">
-            <div style={{backgroundImage : `url(${user?.profileImage})`}} className="min-w-[45px] min-h-[45px] rounded-full bg-white bg-no-repeat bg-center bg-cover "></div>
+            <div
+              style={{ backgroundImage: `url(${user?.profileImage})` }}
+              className="min-w-[45px] min-h-[45px] rounded-full bg-white bg-no-repeat bg-center bg-cover "
+            ></div>
             <span className="text-white text-[1rem] font-inter font-[500]">
               {user?.name}
             </span>
@@ -313,25 +400,74 @@ const RenderPostTypes = ({
             setSelectedWorkRole={setselectedWorkRole}
             className="self-start ml-[5%] mb-3 max-w-[240px]"
           />
-          <div className="w-[80%] lg:w-[75%] h-[50%] max-h-[250px] rounded-[10px] border-[1px] border-primaryBorder flex items-center p-[10px] box-border">
-            <div className="relative w-full h-full rounded-[5px] bg-media flex flex-col items-center justify-center">
-              {/* <Add onClick={() => setPostType('Ordinary')} color='white' size={26} className='absolute z-[1000] top-[2%] right-[1%] cursor-pointer rotate-45' /> */}
-              <div className="min-h-[40px] min-w-[40px] rounded-full bg-lightGrey flex flex-col items-center justify-center ">
-                <GalleryAdd variant="Bold" color="white" size={26} />
+          <div className="relative w-[80%] lg:w-[75%] h-[50%] max-h-[250px] rounded-[10px] border-[1px] border-primaryBorder flex items-center p-[10px] box-border">
+            {files.length > 0 && (
+              <div className="absolute z-[1000] -top-[13px] -right-[13px] bg-gray-400 min-h-[30px] min-w-[30px] rounded-full flex items-center justify-center ">
+                <Add
+                  onClick={() => setFiles([])}
+                  color="white"
+                  size={26}
+                  className=" cursor-pointer rotate-45"
+                />
               </div>
-              <span className="text-white text-[1.1rem] font-inter font-[700] mt-1">
-                Add Photo/Video
-              </span>
-              <span className="text-white_half_opacity text-[0.9rem] font-inter font-[500]">
-                drag and drop to add file
-              </span>
-              <input
-                type="file"
-                name=""
-                id=""
-                className="absolute top-0 border-2 bottom-0 m-auto h-full w-full cursor-pointer opacity-0"
-              />
-            </div>
+            )}
+            {files.length <= 0 ? (
+              <div className="relative w-full h-full rounded-[5px] bg-media flex flex-col items-center justify-center">
+                {/* <Add onClick={() => setPostType('Ordinary')} color='white' size={26} className='absolute z-[1000] top-[2%] right-[1%] cursor-pointer rotate-45' /> */}
+                <div className="min-h-[40px] min-w-[40px] rounded-full bg-lightGrey flex flex-col items-center justify-center ">
+                  <GalleryAdd variant="Bold" color="white" size={26} />
+                </div>
+                <span className="text-white text-[1.1rem] font-inter font-[700] mt-1">
+                  Add Photo/Video
+                </span>
+                <span className="text-white_half_opacity text-[0.9rem] font-inter font-[500]">
+                  drag and drop to add file
+                </span>
+                <input
+                  onChange={(e) => {
+                    if (!e.target.files) {
+                      return;
+                    }
+                    console.log(Object.values(e.target.files).length);
+                    setFiles(Object.values(e.target.files));
+                  }}
+                  type="file"
+                  multiple
+                  name=""
+                  id=""
+                  className="absolute top-0 border-2 bottom-0 m-auto h-full w-full cursor-pointer opacity-0"
+                />
+              </div>
+            ) : (
+              <div
+                className={`relative w-full h-full rounded-[5px] bg-media grid ${
+                  files.length > 1 ? "grid-cols-2" : "grid-cols-1"
+                } place-content-start place-items-center overflow-x-hidden overflow-y-scroll scrollbar-hide`}
+              >
+                {files.map((item, i) => (
+                  <img
+                    key={i}
+                    src={URL.createObjectURL(item)}
+                    alt=""
+                    className="w-full h-full object-contain border-[1px] border-gray-700"
+                  />
+                ))}
+                <input
+                  onChange={(e) => {
+                    if (!e.target.files) {
+                      return;
+                    }
+                    console.log(Object.values(e.target.files).length);
+                    setFiles(Object.values(e.target.files));
+                  }}
+                  type="file"
+                  multiple
+                  name=""
+                  id=""
+                  className="absolute top-0 border-2 bottom-0 m-auto h-full w-full cursor-pointer opacity-0"
+                />
+              </div>
+            )}
           </div>
         </div>
       );
@@ -339,7 +475,10 @@ const RenderPostTypes = ({
       return (
         <div className="w-full h-full flex flex-col items-center justify-start">
           <div className="min-h-[60px] w-full flex items-center justify-start px-5 box-border gap-x-2">
-            <div style={{backgroundImage : `url(${user?.profileImage})`}} className="min-w-[45px] min-h-[45px] rounded-full bg-white bg-no-repeat bg-center bg-cover "></div>
+            <div
+              style={{ backgroundImage: `url(${user?.profileImage})` }}
+              className="min-w-[45px] min-h-[45px] rounded-full bg-white bg-no-repeat bg-center bg-cover "
+            ></div>
             <span className="text-white text-[1rem] font-inter font-[500]">
               {user?.name}
             </span>

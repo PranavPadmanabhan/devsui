@@ -1,3 +1,4 @@
+import { Dispatch, SetStateAction } from "react";
 
 export type PostType = "Ordinary" | "Media" | "Work" | "Event" | "Freelance";
 
@@ -51,7 +52,9 @@ export type Comment = {
     commentedAt?:string;
     comment:string;
     likes:number;
-    replies:ReplyComment[]
+    replies:ReplyComment[];
+    setReplyMessage:Dispatch<SetStateAction<any>>
+
 }
 
 export type ReplyComment = {

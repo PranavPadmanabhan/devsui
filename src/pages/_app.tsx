@@ -6,8 +6,11 @@ import { configureChains, createClient, WagmiConfig } from "wagmi";
 import { polygon, polygonMumbai } from "wagmi/chains";
 import { publicProvider } from "wagmi/providers/public";
 import AppContextProvider from "@/contexts/appContext";
+import { ThirdwebProvider, ChainId } from "@thirdweb-dev/react";
 
 export default function App({ Component, pageProps }: AppProps) {
+  const activeChainId = ChainId.Mumbai;
+
   const { chains, provider } = configureChains(
     [polygon, polygonMumbai],
     [publicProvider()]
@@ -27,9 +30,11 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <WagmiConfig client={wagmiClient}>
       <RainbowKitProvider chains={chains}>
-        <AppContextProvider>
-          <Component {...pageProps} />
-        </AppContextProvider>
+        <ThirdwebProvider activeChain={activeChainId} autoConnect>
+          <AppContextProvider>
+            <Component {...pageProps} />
+          </AppContextProvider>
+        </ThirdwebProvider>
       </RainbowKitProvider>
     </WagmiConfig>
   );

@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-import React from "react";
+import React, { Dispatch, SetStateAction, useState } from "react";
 import { MenuIcon } from "../core/icons";
 import ActivitySection from "./ActivitySection";
 import { Comment, Post, PostInteractionType } from "@/constants/Types";
@@ -8,10 +8,14 @@ import ReplyHeader from "./ReplyHeader";
 import CommentItem from "./Comment";
 import LikeItem from "./LikeItem";
 import WorkRequestItem from "./WorkRequestItem";
+import { useAppUiStore } from "@/store/app";
 
 const Post = (post: Post) => {
   const [activeSection, setActiveSection] =
-    React.useState<PostInteractionType>(null);
+    useState<PostInteractionType>(null);
+
+  const [comment, setComment] = useState('') 
+  const [replyMessage, setReplyMessage] = useState({}) 
 
   return (
     <div className="relative w-full h-auto bg-secondaryBG border-[1px] border-primaryBorder rounded-[10px] flex flex-col items-center justify-start mb-2">
@@ -44,18 +48,26 @@ const Post = (post: Post) => {
         </div>
         {post?.images?.length > 0 && (
           <div
-            className={`w-full h-[25vh] lg:h-[45vh] grid ${
-              post.images.length > 1 ? "grid-cols-2" : "grid-cols-1"
-            } place-content-start place-items-center px-0 box-border`}
+            className={`w-full h-[25vh] lg:h-[45vh] flex flex-col items-center justify-start border-[1px] border-gray-700 rounded-md `}
           >
-            {post.images.map((item: any, i: number) => (
-              <img
-                key={i}
-                src={item}
-                alt=""
-                className="w-full h-full rounded-[10px] object-fill"
-              />
-            ))}
+            <div
+              className={`flex items-center justify-center w-full ${post?.images?.length > 2 ? "h-[50%]" : "h-full"} `}
+            >
+              <img src={post?.images[0]} alt="" className={`h-full ${
+                post?.images?.length > 1 ? "w-[50%]" : "w-full"
+              } object-fill`} />
+              {
+                post?.images.length>1 && ( <img src={post?.images[1]} alt="" className={`h-full w-[50%] object-fill `} />)
+              }
+            </div>
+            <div
+              className={`flex items-center ${post?.images?.length > 3 ? 'justify-center' : 'justify-start'} w-full h-[50%]`}
+            >
+              <img src={post?.images[2]} alt="" className={` h-full w-[50%] object-fill`} />
+              {
+                post?.images.length>3 && ( <img src={post?.images[3]} alt="" className={`h-full w-[50%] object-fill`} />)
+              }
+            </div>
           </div>
         )}
         <button
@@ -81,6 +93,10 @@ const Post = (post: Post) => {
           comments={post.comments}
           likes={post.likes.length}
           type={activeSection}
+          comment={comment}
+          setComment={setComment}
+          setReplyMessage={setReplyMessage}
+          replyMessage={replyMessage}
         />
       </div>
     </div>
@@ -91,19 +107,38 @@ const RenderBottomSection = ({
   type,
   comments,
   likes,
+  comment,
+  setComment,
+  setReplyMessage,
+  replyMessage
 }: {
   type: PostInteractionType;
   likes: number;
   comments: Comment[];
+  comment:string
+  setComment:Dispatch<SetStateAction<string>>
+  setReplyMessage:Dispatch<SetStateAction<any>>,
+  replyMessage:any
 }) => {
-  if (type === "Comment" && comments.length > 0) {
+  const { user } = useAppUiStore()
+
+  if (type === "Comment") {
     return (
       <div className="w-full min-h-[50px] flex flex-col items-center justify-start pt-2 box-border ">
-        <ReplyHeader to="Pranav" />
-        <CommentInputSection />
+        { Object.keys(replyMessage).length > 0 && (<ReplyHeader to={user?.name!} />)}
+        <CommentInputSection comment={comment} setComment={setComment} />
         <div className="w-[78%] min-h-[1px] bg-primaryBorder my-2 "></div>
-        <div className="flex flex-col items-center justify-start w-full h-auto min-h-[60px]">
-          {comments.map((comment, i) => (
+        {
+         comments.length > 0 && (
+            <div className="flex flex-col items-center justify-start w-full h-auto min-h-[60px]">
+          {comments.sort((a,b) => {
+            if(a.commentedAt! > b.commentedAt!){
+              return -1
+            }
+            else {
+              return 1
+            }
+          }).slice(0,3).map((comment, i) => (
             <CommentItem
               key={i}
               comment={comment.comment}
@@ -111,9 +146,13 @@ const RenderBottomSection = ({
               name={comment.name}
               profileImage={comment.profileImage}
               replies={comment.replies}
+              setReplyMessage={setReplyMessage}
+              commentedAt={comment.commentedAt}
             />
           ))}
         </div>
+          )
+        }
       </div>
     );
   } else if (type === "Likes" && likes > 0) {

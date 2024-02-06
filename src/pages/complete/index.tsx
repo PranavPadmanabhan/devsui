@@ -2,9 +2,8 @@
 import { LogoBig } from "@/components/core/icons";
 import { GalleryAdd } from "iconsax-react";
 import Head from "next/head";
-import React, { Dispatch, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import styles from "@/styles/Home.module.css";
-import { ThirdwebStorage } from "@thirdweb-dev/storage";
 import { ImSpinner2 } from "react-icons/im";
 import { useAppUiStore } from "@/store/app";
 import JobDropdown from "@/components/dropdowns/JobDropdown";
@@ -12,6 +11,7 @@ import { useAppContext } from "@/contexts/appContext";
 import { useAccount } from "wagmi";
 import Axios from "@/config/AxiosConfig";
 import { useRouter } from "next/router";
+import { useStorageUpload } from "@thirdweb-dev/react";
 
 type state = {
   bio: string;
@@ -21,88 +21,101 @@ type state = {
 type Loading = {
   coverImageUploading: boolean;
   profileImageUploading: boolean;
-  updating:boolean
+  updating: boolean;
 };
 
-
-
 const Complete = () => {
-  const storage = new ThirdwebStorage();
-  const { user,setUser } = useAppUiStore()
-  const { login } = useAppContext()
-  const router = useRouter()
-  const { isConnected,address } = useAccount()
+  const { user, setUser } = useAppUiStore();
+  const { login } = useAppContext();
+  const router = useRouter();
+  const { isConnected, address } = useAccount();
+  const { mutateAsync: upload, isLoading, isSuccess } = useStorageUpload();
+
   const [state, setState] = useState<state>({
-    bio:'',
+    bio: "",
     dob: "",
   });
-  const [role, setRole] = useState("")
+  const [role, setRole] = useState("");
   const [loading, setLoading] = useState<Loading>({
     coverImageUploading: false,
     profileImageUploading: false,
-    updating:false
+    updating: false,
   });
 
   useEffect(() => {
-    if(address){
-      login()
+    if (address) {
+      login();
     }
-  }, [isConnected,address])
-  
+  }, [isConnected, address]);
 
   const uploadImage = async (image: any, set: "cover" | "profile") => {
     try {
-      
       if (set === "cover") {
         setLoading({ ...loading, coverImageUploading: true });
-        const uploaded = await storage.upload(image, {
-          uploadWithGatewayUrl: true,
-          uploadWithoutDirectory: true,
+        // const uploaded = await storage.upload(image, {
+        //   uploadWithGatewayUrl: true,
+        //   uploadWithoutDirectory: true,
+        // });
+
+        const uploaded = await upload({
+          data: [image],
+          options: {
+            onProgress: (e: any) => {
+              // setUploadingRate(Math.round((e.progress / e.total) * 100))
+            },
+            uploadWithGatewayUrl: true,
+            uploadWithoutDirectory: false,
+          },
         });
-  
-        const res = await Axios.put(`/auth/user/${address}`,{
-          coverImage:uploaded
-        })
+
+        const res = await Axios.put(`/auth/user/${address}`, {
+          coverImage: uploaded[0],
+        });
         const data = await res.data;
-        if(data.walletAddress){
+        if (data.walletAddress) {
           setUser({
             email: data.email,
             name: data.name,
             userName: data.userName,
             walletAddress: data.walletAddress,
-            bio:data?.bio??null,
-            coverImage:data?.coverImage?? null,
-            dob:data?.dob??null,
-            profileImage:data?.profileimage??null,
-            role:data?.role??null
-          })
- 
+            bio: data?.bio ?? null,
+            coverImage: data?.coverImage ?? null,
+            dob: data?.dob ?? null,
+            profileImage: data?.profileimage ?? null,
+            role: data?.role ?? null,
+          });
         }
 
         setLoading({ ...loading, coverImageUploading: false });
       } else {
         setLoading({ ...loading, profileImageUploading: true });
-        const uploaded = await storage.upload(image, {
-          uploadWithGatewayUrl: true,
-          uploadWithoutDirectory: true,
+        const uploaded = await upload({
+          data: [image],
+          options: {
+            onProgress: (e: any) => {
+              // setUploadingRate(Math.round((e.progress / e.total) * 100))
+            },
+            uploadWithGatewayUrl: true,
+            uploadWithoutDirectory: false,
+          },
         });
-  
-        const res = await Axios.put(`/auth/user/${address}`,{
-          profileImage:uploaded
-        })
+
+        const res = await Axios.put(`/auth/user/${address}`, {
+          profileImage: uploaded[0],
+        });
         const data = await res.data;
-        if(data.walletAddress){
+        if (data.walletAddress) {
           setUser({
             email: data.email,
             name: data.name,
             userName: data.userName,
             walletAddress: data.walletAddress,
-            bio:data?.bio??null,
-            coverImage:data?.coverImage?? null,
-            dob:data?.dob??null,
-            profileImage:data?.profileimage??null,
-            role:data?.role??null
-          })
+            bio: data?.bio ?? null,
+            coverImage: data?.coverImage ?? null,
+            dob: data?.dob ?? null,
+            profileImage: data?.profileimage ?? null,
+            role: data?.role ?? null,
+          });
         }
 
         setLoading({ ...loading, profileImageUploading: false });
@@ -116,42 +129,40 @@ const Complete = () => {
     }
   };
 
-  const updateDetails = async(e:any) => {
-    e.preventDefault()
-   if(
-    role.trim().length !== 0&& 
-    state.bio.trim().length !== 0 && 
-    state.dob.trim().length !== 0
-   ){
-    try {
-      setLoading({ ...loading, updating: true });
-      const res = await Axios.put(`/auth/user/${address}`,{
-        bio:state.bio,
-        dob:state.dob,
-        role:role
-      })
-      const data = await res.data;
-      if(data.walletAddress){
-        setUser({
-          email: data.email,
-          name: data.name,
-          userName: data.userName,
-          walletAddress: data.walletAddress,
-          bio:data?.bio??null,
-          coverImage:data?.coverImage?? null,
-          dob:data?.dob??null,
-          profileImage:data?.profileimage??null,
-          role:data?.role??null
-        })
-        router.replace("/home")
-      }
+  const updateDetails = async (e: any) => {
+    e.preventDefault();
+    if (
+      role.trim().length !== 0 &&
+      state.bio.trim().length !== 0 &&
+      state.dob.trim().length !== 0
+    ) {
+      try {
+        setLoading({ ...loading, updating: true });
+        const res = await Axios.put(`/auth/user/${address}`, {
+          bio: state.bio,
+          dob: state.dob,
+          role: role,
+        });
+        const data = await res.data;
+        if (data.walletAddress) {
+          setUser({
+            email: data.email,
+            name: data.name,
+            userName: data.userName,
+            walletAddress: data.walletAddress,
+            bio: data?.bio ?? null,
+            coverImage: data?.coverImage ?? null,
+            dob: data?.dob ?? null,
+            profileImage: data?.profileimage ?? null,
+            role: data?.role ?? null,
+          });
+          router.replace("/home");
+        }
 
-      setLoading({ ...loading, updating: false });
-    } catch (error) {
-      
+        setLoading({ ...loading, updating: false });
+      } catch (error) {}
     }
-   }
-  }
+  };
 
   return (
     <div className="w-screen h-screen flex items-center bg-greyBG justify-center  lg:px-0 box-border">
@@ -174,7 +185,10 @@ const Complete = () => {
           </div>
         </section>
         <section className="w-1/2 h-full flex flex-col items-center  justify-center">
-          <form onSubmit={updateDetails} className="w-[80%] h-[80%] max-w-[700px] max-h-[700px] flex flex-col items-center justify-start">
+          <form
+            onSubmit={updateDetails}
+            className="w-[80%] h-[80%] max-w-[700px] max-h-[700px] flex flex-col items-center justify-start"
+          >
             <h1 className="text-white text-[2vw] font-inter font-[700] self-start mb-2">
               Upload Info
             </h1>
@@ -204,8 +218,7 @@ const Complete = () => {
                 onChange={(e) => {
                   if (!e.target.files) {
                     return;
-                  }
-                  else uploadImage(e.target.files[0], "cover");
+                  } else uploadImage(e.target.files[0], "cover");
                 }}
                 type="file"
                 name=""
@@ -219,13 +232,12 @@ const Complete = () => {
                   style={{ backgroundImage: `url(${user?.profileImage!})` }}
                   className="relative min-w-[120px] min-h-[120px] rounded-full bg-transparent flex items-center justify-center bg-no-repeat bg-center bg-cover"
                 >
-                  {!user?.profileImage &&
-                    !loading.coverImageUploading && (
-                      <h1 className="text-[0.8rem] text-white_half_opacity font-inter font-[300] max-w-[80%] text-center">
-                        upload
-                        <br /> profile image
-                      </h1>
-                    )}
+                  {!user?.profileImage && !loading.profileImageUploading && (
+                    <h1 className="text-[0.8rem] text-white_half_opacity font-inter font-[300] max-w-[80%] text-center">
+                      upload
+                      <br /> profile image
+                    </h1>
+                  )}
                   {loading.profileImageUploading && (
                     <ImSpinner2
                       color="white"
@@ -238,8 +250,7 @@ const Complete = () => {
                     onChange={(e) => {
                       if (!e.target.files) {
                         return;
-                      }
-                      else uploadImage(e.target.files[0], "profile");
+                      } else uploadImage(e.target.files[0], "profile");
                     }}
                     type="file"
                     name=""
@@ -250,28 +261,51 @@ const Complete = () => {
               </div>
             </div>
             <div className="w-full min-h-[60px] flex flex-col items-start justify-start pt-[2px] pl-[160px] box-border ">
-              <h1 className="text-white font-inter text-[1.1rem] font-[700]">{user?.name} </h1>
-              <h1 className="text-transparent bg-clip-text bg-gradient-to-r from-primaryGradient2 to-primaryGradient1 font-inter text-[0.85rem] font-[400]">@{user?.userName} </h1>
+              <h1 className="text-white font-inter text-[1.1rem] font-[700]">
+                {user?.name}{" "}
+              </h1>
+              <h1 className="text-transparent bg-clip-text bg-gradient-to-r from-primaryGradient2 to-primaryGradient1 font-inter text-[0.85rem] font-[400]">
+                @{user?.userName}{" "}
+              </h1>
             </div>
-            <textarea onChange={(e) => setState({...state,bio:e.target.value})} style={{resize:'none'}} className="self-start mt-[20px] pt-9 px-3 box-border w-full min-h-[90px] h-[20%] max-h-[110px] bg-modalBG rounded-[10px] border-[1px] border-primaryBorder focus:outline-none text-white text-[1rem] " placeholder="Bio" name="" id="" cols={30} rows={10}></textarea>
+            <textarea
+              onChange={(e) => setState({ ...state, bio: e.target.value })}
+              style={{ resize: "none" }}
+              className="self-start mt-[20px] pt-9 px-3 box-border w-full min-h-[90px] h-[20%] max-h-[110px] bg-modalBG rounded-[10px] border-[1px] border-primaryBorder focus:outline-none text-white text-[1rem] "
+              placeholder="Bio"
+              name=""
+              id=""
+              cols={30}
+              rows={10}
+            ></textarea>
             <div className="self-start w-full h-auto flex items-center justify-between mt-2">
-              <JobDropdown placeholder="Select Role" list={[
-                "Designer",
-                "Developer",
-                "Both"
-              ]} selectedWorkRole={role} setSelectedWorkRole={setRole} className="bg-modalBG max-w-[250px]" />
-              <input onChange={(e) => setState({...state,dob:e.target.value})} placeholder="Date of birth (DD/MM/YYYY)" type="text" className="w-1/2 max-w-[250px] min-h-[45px] rounded-[10px] border-[1px] border-primaryBorder bg-modalBG pl-3 box-border focus:outline-none text-white text-[1rem] " />
+              <JobDropdown
+                placeholder="Select Role"
+                list={["Designer", "Developer", "Both"]}
+                selectedWorkRole={role}
+                setSelectedWorkRole={setRole}
+                className="bg-modalBG max-w-[250px]"
+              />
+              <input
+                onChange={(e) => setState({ ...state, dob: e.target.value })}
+                placeholder="Date of birth (DD/MM/YYYY)"
+                type="text"
+                className="w-1/2 max-w-[250px] min-h-[45px] rounded-[10px] border-[1px] border-primaryBorder bg-modalBG pl-3 box-border focus:outline-none text-white text-[1rem] "
+              />
             </div>
-            <button onClick={updateDetails} className="min-w-[150px] min-h-[45px] rounded-[5px] bg-gradient-to-r from-primaryGradient1 to-primaryGradient2 mt-8 flex items-center justify-center">
-            {loading.updating ? (
-                    <ImSpinner2
-                      color="white"
-                      size={22}
-                      className="animate-rotate"
-                    />
-                  ) : (
-                   <h1 className="text-white text-[0.9rem]">Update</h1>
-                  )}
+            <button
+              onClick={updateDetails}
+              className="min-w-[150px] min-h-[45px] rounded-[5px] bg-gradient-to-r from-primaryGradient1 to-primaryGradient2 mt-8 flex items-center justify-center"
+            >
+              {loading.updating ? (
+                <ImSpinner2
+                  color="white"
+                  size={22}
+                  className="animate-rotate"
+                />
+              ) : (
+                <h1 className="text-white text-[0.9rem]">Update</h1>
+              )}
             </button>
           </form>
         </section>

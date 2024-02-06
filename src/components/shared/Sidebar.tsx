@@ -6,6 +6,8 @@ import { Logout } from "iconsax-react";
 import { useRouter } from "next/router";
 import React from "react";
 import { useAccount, useDisconnect } from "wagmi";
+import { MediaRenderer } from "@thirdweb-dev/react";
+
 
 const Sidebar = () => {
   const router = useRouter();

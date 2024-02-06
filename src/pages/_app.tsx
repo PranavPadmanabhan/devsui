@@ -30,7 +30,11 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <WagmiConfig client={wagmiClient}>
       <RainbowKitProvider chains={chains}>
-        <ThirdwebProvider activeChain={activeChainId} autoConnect>
+        <ThirdwebProvider
+          clientId={process.env.NEXT_PUBLIC_CLIENT_ID!} // You can get a client id from dashboard settings
+          activeChain="mumbai"
+          autoConnect
+        >
           <AppContextProvider>
             <Component {...pageProps} />
           </AppContextProvider>
